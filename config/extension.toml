@@ -1,0 +1,26 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "1.0.0"
+category = "Utilities"
+title = "Menu Quick Search"
+description = "Search and execute menubar entries dynamically with F3."
+authors = ["Local"]
+repository = "https://github.com/vitusli/omni.menu.quicksearch"
+keywords = ["menu", "quicksearch", "f3", "menubar", "actions"]
+readme = "README.md"
+
+[dependencies]
+"omni.ui" = {}
+"omni.kit.window.quicksearch" = {}
+"omni.kit.menu.utils" = {}
+"omni.kit.actions.core" = {}
+"omni.kit.mainwindow" = {}
+"omni.kit.ui_test" = {}
+"omni.kit.hotkeys.core" = { optional = true }
+"omni.appwindow" = { optional = true }
+
+[[python.module]]
+name = "omni.menu.quicksearch"
