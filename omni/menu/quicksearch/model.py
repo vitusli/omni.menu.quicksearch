@@ -85,7 +85,23 @@ class MenuQuickSearchModel(ui.AbstractItemModel):
             children = list(self._flatten_entries(entries, (menu_name,), seen))
             if children:
                 items.append(MenuQuickSearchItem(menu_name, menu_name, children=children))
+        if not items:
+            for menu_name, entries in self._build_menu_dict_from_actions().items():
+                children = list(self._flatten_entries(entries, (menu_name,), seen))
+                if children:
+                    items.append(MenuQuickSearchItem(menu_name, menu_name, children=children))
         return items
+
+    def _build_menu_dict_from_actions(self) -> dict:
+        menu_dict = {}
+        for path in self._action_map:
+            if len(path) < 2:
+                continue
+            output = menu_dict.setdefault(path[0], {})
+            for name in path[1:-1]:
+                output = output.setdefault(name, {})
+            output.setdefault("_", []).append(path[-1])
+        return menu_dict
 
     def _build_action_maps(self) -> tuple[dict[tuple[str, ...], ActionFn], dict[str, list[tuple[tuple[str, ...], ActionFn]]]]:
         try:

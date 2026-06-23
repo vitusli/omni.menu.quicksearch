@@ -58,6 +58,7 @@ class MenuQuickSearchExtension(omni.ext.IExt):
 
     def show_window(self):
         self._exclusive = True
+        self._capture_menu_snapshot_once()
         if not self._window:
             self._window = QuickSearchWindow()
         else:
@@ -73,24 +74,31 @@ class MenuQuickSearchExtension(omni.ext.IExt):
 
     async def _capture_menu_snapshot(self):
         for _ in range(120):
-            try:
-                from omni.kit.mainwindow import get_main_window
-
-                main_window = get_main_window()
-                if main_window:
-                    menu_bar = main_window.get_main_menu_bar()
-                    menu_dict, trigger_map = self._capture_menu_bar(menu_bar)
-                    if menu_dict:
-                        set_menu_snapshot(menu_dict, trigger_map)
-                        carb.log_info(f"[MenuQuickSearch] Captured {len(menu_dict)} menubar roots")
-                        return
-            except asyncio.CancelledError:
-                raise
-            except Exception as exc:
-                carb.log_warn(f"[MenuQuickSearch] Menubar snapshot not ready yet: {exc}")
+            if self._capture_menu_snapshot_once():
+                return
             await omni.kit.app.get_app().next_update_async()
 
         carb.log_warn("[MenuQuickSearch] Could not capture menubar snapshot during startup")
+
+    def _capture_menu_snapshot_once(self):
+        try:
+            from omni.kit.mainwindow import get_main_window
+
+            main_window = get_main_window()
+            if not main_window:
+                return False
+
+            menu_bar = main_window.get_main_menu_bar()
+            menu_dict, trigger_map = self._capture_menu_bar(menu_bar)
+            if not menu_dict:
+                return False
+
+            set_menu_snapshot(menu_dict, trigger_map)
+            carb.log_info(f"[MenuQuickSearch] Captured {len(menu_dict)} menubar roots")
+            return True
+        except Exception as exc:
+            carb.log_warn(f"[MenuQuickSearch] Menubar snapshot not ready yet: {exc}")
+            return False
 
     def _capture_menu_bar(self, menu_bar):
         import re
